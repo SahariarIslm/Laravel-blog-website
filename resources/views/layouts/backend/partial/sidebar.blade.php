@@ -73,6 +73,18 @@
                                 <span>Favorite Posts</span>
                             </a>
                         </li>
+                        <li class="{{ Request::is('admin/Comments') ? 'active' : '' }}">
+                            <a href="{{route('admin/comment.index')}}">
+                                <i class="material-icons">comment</i>
+                                <span>Comments</span>
+                            </a>
+                        </li>
+                        <li class="{{ Request::is('admin/authors') ? 'active' : '' }}">
+                            <a href="{{route('admin/author.index')}}">
+                                <i class="material-icons">account_circle</i>
+                                <span>Authors</span>
+                            </a>
+                        </li>
                         <li class="{{ Request::is('admin/subscriber') ? 'active' : '' }}">
                             <a href="{{route('admin/subscriber.index')}}">
                                 <i class="material-icons">subscriptions</i>
@@ -118,6 +130,12 @@
                             <a href="{{route('author/favorite.index')}}">
                                 <i class="material-icons">favorite</i>
                                 <span>Favorite Posts</span>
+                            </a>
+                        </li>
+                        <li class="{{ Request::is('author/Comments') ? 'active' : '' }}">
+                            <a href="{{route('author/comment.index')}}">
+                                <i class="material-icons">comment</i>
+                                <span>Comments</span>
                             </a>
                         </li>
                         <li class="header" >System</li>

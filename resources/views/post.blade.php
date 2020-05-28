@@ -1,16 +1,28 @@
 @extends('layouts.frontend.app')
 
 @section('title')
+	{{ $post->title }}
 @endsection
 
 @push('css')
+	<link rel="stylesheet" href="{{asset('assets/frontend/css/single-post/styles.css')}}">
+	<link rel="stylesheet" href="{{asset('assets/frontend/css/single-post/responsive.css')}}">
+	<style>
+		.header-bg{
+			height: 300px; 
+			width: 100%; 
+			background-image: url({{ Storage::disk('public')->url('post/'.$post->image) }});
+			background-size:cover;
+		}
+        .favorite_posts{
+            color: blue;
+        }
+    </style>
 @endpush
 
 @section('content')
-	<div class="slider">
-		<div class="display-table  center-text">
-			<h1 class="title display-table-cell"><b>DESIGN</b></h1>
-		</div>
+	<div class="header-bg">
+		
 	</div>
 	<!-- slider -->
 
@@ -28,45 +40,51 @@
 							<div class="post-info">
 
 								<div class="left-area">
-									<a class="avatar" href="#"><img src="images/avatar-1-120x120.jpg" alt="Profile Image"></a>
+									<a class="avatar" href="{{route('author.profile',$post->user->username)}}"><img src="{{Storage::disk('public')->url('profile/'.$post->user->image)}}"></a>
 								</div>
 
 								<div class="middle-area">
-									<a class="name" href="#"><b>Katy Liu</b></a>
-									<h6 class="date">on Sep 29, 2017 at 9:48 am</h6>
+									<a class="name" href="#"><b>{{$post->user->name}}</b></a>
+									<h6 class="date">on {{$post->created_at->diffForHumans()}}</h6>
 								</div>
 
 							</div><!-- post-info -->
 
-							<h3 class="title"><a href="#"><b>How Did Van Gogh's Turbulent Mind Depict One of the Most Complex Concepts in Physics?</b></a></h3>
+							<h3 class="title"><a href="#"><b>{{$post->title}}</b></a></h3>
 
-							<p class="para">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-							dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-							ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-							nulla pariatur. Excepteur sint
-							occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+							<div class="para">
+								{!! html_entity_decode($post->body) !!}
+							</div>
 
-							<div class="post-image"><img src="images/blog-1-1000x600.jpg" alt="Blog Image"></div>
-
-							<p class="para">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-							dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-							ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-							nulla pariatur. Excepteur sint
-							occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+							
 
 							<ul class="tags">
-								<li><a href="#">Mnual</a></li>
-								<li><a href="#">Liberty</a></li>
-								<li><a href="#">Recommendation</a></li>
-								<li><a href="#">Inspiration</a></li>
+								@foreach($post->tags as $tag)
+								<li><a href="{{route('tag.posts',$tag->slug)}}">{{$tag->name}}</a></li>
+								@endforeach
 							</ul>
 						</div><!-- blog-post-inner -->
 
 						<div class="post-icons-area">
 							<ul class="post-icons">
-								<li><a href="#"><i class="ion-heart"></i>57</a></li>
-								<li><a href="#"><i class="ion-chatbubble"></i>6</a></li>
-								<li><a href="#"><i class="ion-eye"></i>138</a></li>
+								<li>
+                                        @guest
+                                        <a href="javascript:void(0);" onclick="toastr.info('To add favorite list you need to login first','Info',{
+                                            closeButton: true,
+                                            progressBar: true,
+                                            })"><i class="ion-heart"></i> {{ $post->favorite_to_users->count() }} </a>
+                                        @else
+                                        <a href="javascript:void(0);" onclick="document.getElementById('favorite-form-{{$post->id}}').submit();"
+                                            class="{{ !Auth::user()->favorite_posts->where('pivot.post_id',$post->id)->count() == 0 ? 'favorite_posts' : '' }}" 
+                                            ><i class="ion-heart"></i> {{ $post->favorite_to_users->count() }} </a>
+                                        <form id="favorite-form-{{$post->id}}" method="POST" action="{{route('post.favorite',$post->id)}}" style="display: none;">
+                                            @csrf
+                                        </form>
+                                        @endguest
+                                        
+                                    </li>
+                                    <li><a href="#"><i class="ion-chatbubble"></i>{{ $post->comments->count() }}</a></li>
+                                    <li><a href="#"><i class="ion-eye"></i>{{$post->view_count}}</a></li>
 							</ul>
 
 							<ul class="icons">
@@ -75,19 +93,6 @@
 								<li><a href="#"><i class="ion-social-twitter"></i></a></li>
 								<li><a href="#"><i class="ion-social-pinterest"></i></a></li>
 							</ul>
-						</div>
-
-						<div class="post-footer post-info">
-
-							<div class="left-area">
-								<a class="avatar" href="#"><img src="images/avatar-1-120x120.jpg" alt="Profile Image"></a>
-							</div>
-
-							<div class="middle-area">
-								<a class="name" href="#"><b>Katy Liu</b></a>
-								<h6 class="date">on Sep 29, 2017 at 9:48 am</h6>
-							</div>
-
 						</div><!-- post-info -->
 
 
@@ -99,36 +104,19 @@
 					<div class="single-post info-area">
 
 						<div class="sidebar-area about-area">
-							<h4 class="title"><b>ABOUT BONA</b></h4>
-							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-								ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
-								Ut enim ad minim veniam</p>
+							<h4 class="title"><b>ABOUT AUTHOR</b></h4>
+							<p>{{$post->user->about}}</p>
 						</div>
-
-						<div class="sidebar-area subscribe-area">
-
-							<h4 class="title"><b>SUBSCRIBE</b></h4>
-							<div class="input-area">
-								<form>
-									<input class="email-input" type="text" placeholder="Enter your email">
-									<button class="submit-btn" type="submit"><i class="icon ion-ios-email-outline"></i></button>
-								</form>
-							</div>
-
-						</div><!-- subscribe-area -->
 
 						<div class="tag-area">
 
-							<h4 class="title"><b>TAG CLOUD</b></h4>
+							<h4 class="title"><b>CATEGORIES</b></h4>
 							<ul>
-								<li><a href="#">Manual</a></li>
-								<li><a href="#">Liberty</a></li>
-								<li><a href="#">Recomendation</a></li>
-								<li><a href="#">Interpritation</a></li>
-								<li><a href="#">Manual</a></li>
-								<li><a href="#">Liberty</a></li>
-								<li><a href="#">Recomendation</a></li>
-								<li><a href="#">Interpritation</a></li>
+
+								@foreach($post->categories as $category)
+								<li><a href="{{route('category.posts',$category->slug)}}">{{$category->name}}</a></li>
+								@endforeach
+								
 							</ul>
 
 						</div><!-- subscribe-area -->
@@ -146,78 +134,52 @@
 	<section class="recomended-area section">
 		<div class="container">
 			<div class="row">
-
+				@foreach($randomposts as $randompost)
 				<div class="col-lg-4 col-md-6">
-					<div class="card h-100">
-						<div class="single-post post-style-1">
+                    <div class="card h-100">
+                        <div class="single-post post-style-1">
 
-							<div class="blog-image"><img src="images/alex-lambley-205711.jpg" alt="Blog Image"></div>
+                            <div class="blog-image"><img src="{{Storage::disk('public')->url('Post/'.$randompost->image)}}" alt="{{$post->randompost}}"></div>
 
-							<a class="avatar" href="#"><img src="images/icons8-team-355979.jpg" alt="Profile Image"></a>
+                            <a class="avatar" href="#"><img src="{{Storage::disk('public')->url('profile/'.$randompost->user->image)}}" alt="Profile Image"></a>
 
-							<div class="blog-info">
+                            <div class="blog-info">
 
-								<h4 class="title"><a href="#"><b>How Did Van Gogh's Turbulent Mind Depict One of the Most Complex
-								Concepts in Physics?</b></a></h4>
+                                <h4 class="title">
+                                <a href="{{route('post.details',$randompost->slug)}}">
+                                    <b>
+                                        {{$randompost->title}}
+                                    </b>
+                                </a>
+                                </h4>
 
-								<ul class="post-footer">
-									<li><a href="#"><i class="ion-heart"></i>57</a></li>
-									<li><a href="#"><i class="ion-chatbubble"></i>6</a></li>
-									<li><a href="#"><i class="ion-eye"></i>138</a></li>
-								</ul>
+                                <ul class="post-footer">
 
-							</div><!-- blog-info -->
-						</div><!-- single-post -->
-					</div><!-- card -->
-				</div><!-- col-md-6 col-sm-12 -->
+                                    <li>
+                                        @guest
+                                        <a href="javascript:void(0);" onclick="toastr.info('To add favorite list you need to login first','Info',{
+                                            closeButton: true,
+                                            progressBar: true,
+                                            })"><i class="ion-heart"></i> {{ $randompost->favorite_to_users->count() }} </a>
+                                        @else
+                                        <a href="javascript:void(0);" onclick="document.getElementById('favorite-form-{{$randompost->id}}').submit();"
+                                            class="{{ !Auth::user()->favorite_posts->where('pivot.post_id',$randompost->id)->count() == 0 ? 'favorite_posts' : '' }}" 
+                                            ><i class="ion-heart"></i> {{ $randompost->favorite_to_users->count() }} </a>
+                                        <form id="favorite-form-{{$randompost->id}}" method="POST" action="{{route('post.favorite',$randompost->id)}}" style="display: none;">
+                                            @csrf
+                                        </form>
+                                        @endguest
+                                        
+                                    </li>
+                                    <li><a href="#"><i class="ion-chatbubble"></i>{{ $randompost->comments->count() }}</a></li>
+                                    <li><a href="#"><i class="ion-eye"></i>{{$randompost->view_count}}</a></li>
+                                </ul>
 
-				<div class="col-lg-4 col-md-6">
-					<div class="card h-100">
-						<div class="single-post post-style-1">
-
-							<div class="blog-image"><img src="images/caroline-veronez-165944.jpg" alt="Blog Image"></div>
-
-							<a class="avatar" href="#"><img src="images/icons8-team-355979.jpg" alt="Profile Image"></a>
-
-							<div class="blog-info">
-								<h4 class="title"><a href="#"><b>How Did Van Gogh's Turbulent Mind Depict One of the Most Complex
-									Concepts in Physics?</b></a></h4>
-
-								<ul class="post-footer">
-									<li><a href="#"><i class="ion-heart"></i>57</a></li>
-									<li><a href="#"><i class="ion-chatbubble"></i>6</a></li>
-									<li><a href="#"><i class="ion-eye"></i>138</a></li>
-								</ul>
-							</div><!-- blog-info -->
-
-						</div><!-- single-post -->
-
-					</div><!-- card -->
-				</div><!-- col-md-6 col-sm-12 -->
-
-				<div class="col-lg-4 col-md-6">
-					<div class="card h-100">
-						<div class="single-post post-style-1">
-
-							<div class="blog-image"><img src="images/marion-michele-330691.jpg" alt="Blog Image"></div>
-
-							<a class="avatar" href="#"><img src="images/icons8-team-355979.jpg" alt="Profile Image"></a>
-
-							<div class="blog-info">
-								<h4 class="title"><a href="#"><b>How Did Van Gogh's Turbulent Mind Depict One of the Most Complex
-									Concepts in Physics?</b></a></h4>
-
-								<ul class="post-footer">
-									<li><a href="#"><i class="ion-heart"></i>57</a></li>
-									<li><a href="#"><i class="ion-chatbubble"></i>6</a></li>
-									<li><a href="#"><i class="ion-eye"></i>138</a></li>
-								</ul>
-							</div><!-- blog-info -->
-
-						</div><!-- single-post -->
-
-					</div><!-- card -->
-				</div><!-- col-md-6 col-sm-12 -->
+                            </div><!-- blog-info -->
+                        </div><!-- single-post -->
+                    </div><!-- card -->
+                </div><!-- col-lg-4 col-md-6 -->
+				@endforeach
 
 			</div><!-- row -->
 
@@ -231,21 +193,18 @@
 
 				<div class="col-lg-8 col-md-12">
 					<div class="comment-form">
-						<form method="post">
+						@guest
+						<p>To post a comment. You need to log in first... <a href="{{route('login')}}"><strong>Login</strong></a> </p>
+
+						@else
+						<form method="post" action="{{route('comment.store',$post)}}">
+							@csrf
 							<div class="row">
-
-								<div class="col-sm-6">
-									<input type="text" aria-required="true" name="contact-form-name" class="form-control"
-										placeholder="Enter your name" aria-invalid="true" required >
-								</div><!-- col-sm-6 -->
-								<div class="col-sm-6">
-									<input type="email" aria-required="true" name="contact-form-email" class="form-control"
-										placeholder="Enter your email" aria-invalid="true" required>
-								</div><!-- col-sm-6 -->
-
 								<div class="col-sm-12">
-									<textarea name="contact-form-message" rows="2" class="text-area-messge form-control"
+									
+									<textarea name="comment" rows="2" class="text-area-messge form-control"
 										placeholder="Enter your comment" aria-required="true" aria-invalid="false"></textarea >
+									
 								</div><!-- col-sm-12 -->
 								<div class="col-sm-12">
 									<button class="submit-btn" type="submit" id="form-submit"><b>POST COMMENT</b></button>
@@ -253,65 +212,12 @@
 
 							</div><!-- row -->
 						</form>
+						@endguest
 					</div><!-- comment-form -->
 
-					<h4><b>COMMENTS(12)</b></h4>
-
-					<div class="commnets-area">
-
-						<div class="comment">
-
-							<div class="post-info">
-
-								<div class="left-area">
-									<a class="avatar" href="#"><img src="images/avatar-1-120x120.jpg" alt="Profile Image"></a>
-								</div>
-
-								<div class="middle-area">
-									<a class="name" href="#"><b>Katy Liu</b></a>
-									<h6 class="date">on Sep 29, 2017 at 9:48 am</h6>
-								</div>
-
-								<div class="right-area">
-									<h5 class="reply-btn" ><a href="#"><b>REPLY</b></a></h5>
-								</div>
-
-							</div><!-- post-info -->
-
-							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-								ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
-								Ut enim ad minim veniam</p>
-
-						</div>
-
-						<div class="comment">
-							<h5 class="reply-for">Reply for <a href="#"><b>Katy Lui</b></a></h5>
-
-							<div class="post-info">
-
-								<div class="left-area">
-									<a class="avatar" href="#"><img src="images/avatar-1-120x120.jpg" alt="Profile Image"></a>
-								</div>
-
-								<div class="middle-area">
-									<a class="name" href="#"><b>Katy Liu</b></a>
-									<h6 class="date">on Sep 29, 2017 at 9:48 am</h6>
-								</div>
-
-								<div class="right-area">
-									<h5 class="reply-btn" ><a href="#"><b>REPLY</b></a></h5>
-								</div>
-
-							</div><!-- post-info -->
-
-							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-								ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
-								Ut enim ad minim veniam</p>
-
-						</div>
-
-					</div><!-- commnets-area -->
-
+					<h4><b>COMMENTS({{$post->comments()->count()}})</b></h4>
+					@if($post->comments->count() >= 1)
+					@foreach($post->comments as $comment)
 					<div class="commnets-area ">
 
 						<div class="comment">
@@ -319,29 +225,33 @@
 							<div class="post-info">
 
 								<div class="left-area">
-									<a class="avatar" href="#"><img src="images/avatar-1-120x120.jpg" alt="Profile Image"></a>
+									<a class="avatar" href="#"><img src="{{Storage::disk('public')->url('profile/'.$comment->user->image)}}" alt="Profile Image"></a>
 								</div>
 
 								<div class="middle-area">
-									<a class="name" href="#"><b>Katy Liu</b></a>
-									<h6 class="date">on Sep 29, 2017 at 9:48 am</h6>
-								</div>
-
-								<div class="right-area">
-									<h5 class="reply-btn" ><a href="#"><b>REPLY</b></a></h5>
+									<a class="name" href="#"><b>{{$comment->user->name}}</b></a>
+									<h6 class="date">{{$comment->created_at->diffForHumans()}}</h6>
 								</div>
 
 							</div><!-- post-info -->
 
-							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-								ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur
-								Ut enim ad minim veniam</p>
+							<p>{{$comment->comment}}</p>
 
 						</div>
 
 					</div><!-- commnets-area -->
 
-					<a class="more-comment-btn" href="#"><b>VIEW MORE COMMENTS</a>
+					@endForeach
+					@else
+					<div class="commnets-area ">
+						<div class="comment">
+							<p>No comments to show...</p>
+						</div>
+					</div>
+					@endif
+					
+
+					
 
 				</div><!-- col-lg-8 col-md-12 -->
 
